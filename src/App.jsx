@@ -54,10 +54,10 @@ function App() {
 
 
         <Route path="/ManagerLogin" element={<ManagerLoginPage/>}/>
-        <Route path="/ManagerDashboard" element={<ProtectedRouteManager isManager={true}><ManagerDashboard /></ProtectedRouteManager>} />
-        <Route path="/ManageEmployeeDashboard" element={<ProtectedRouteManager isManager={true}><ManageEmployeeDashboard /></ProtectedRouteManager>}/>
-        <Route path="/ManageComplain" element={<ProtectedRouteManager isManager={true}><ComplainManagePage/></ProtectedRouteManager>}/>
-        <Route path="/PastBooking" element={<ProtectedRouteManager isManager={true}><PastBooking/></ProtectedRouteManager>}/>
+        <Route path="/ManagerDashboard" element={<ProtectedRouteManager ><ManagerDashboard /></ProtectedRouteManager>} />
+        <Route path="/ManageEmployeeDashboard" element={<ProtectedRouteManager ><ManageEmployeeDashboard /></ProtectedRouteManager>}/>
+        <Route path="/ManageComplain" element={<ProtectedRouteManager ><ComplainManagePage/></ProtectedRouteManager>}/>
+        <Route path="/PastBooking" element={<ProtectedRouteManager ><PastBooking/></ProtectedRouteManager>}/>
 
 
         <Route path="/AdminLogin" element={<AdminLoginPage />}/>

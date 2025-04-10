@@ -32,7 +32,8 @@ const Navbar = () => {
     }, [username]);
 
     const onLogout = () => {
-        localStorage.removeItem("isAdmin");
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userDetails");
         localStorage.removeItem("username"); // Remove username from local storage
         toast.success("Logout Successful");
         navigate("/login");

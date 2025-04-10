@@ -23,25 +23,16 @@ const ManagerLoginPage = () => {
             console.log("Matching user:", user);
 
             if (user) {
-                const updateResponse = await fetch(`http://localhost:3000/managers/${user.id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ isLoggedIn: true }),
-                });
+                toast.success(`Manager ${user.username} logged in successfully!`);
+                localStorage.setItem("isManager", "true");
+                localStorage.setItem("managerUsername", user.username);
+                localStorage.setItem("managerDetails",JSON.stringify(user))
 
-                console.log("Update response status:", updateResponse.status);
+                setTimeout(() => {
+                    navigate("/ManagerDashboard");
+                }, 1000);
 
-                if (updateResponse.ok) {
-                    toast.success(`Manager ${user.username} logged in successfully!`);
-                    localStorage.setItem("isManager", "true");
-                    localStorage.setItem("managerUsername", user.username);
-
-                    setTimeout(() => {
-                        navigate("/ManagerDashboard");
-                    }, 1000);
-                } else {
-                    toast.error("Failed to update login status.");
-                }
+                
             } else {
                 toast.error("Invalid username or password. Please try again.");
             }

@@ -5,6 +5,8 @@ import ManagerNavbar from "../ManagerNavbar/ManagerNavbar";
 const ComplainManagePage = () => {
     const [complains, setComplains] = useState([]);
     const [managerParkingStation, setManagerParkingStation] = useState("");
+    const managerUsername=localStorage.getItem("managerUsername");
+    const managerDetails=JSON.parse(localStorage.getItem("managerDetails"));
 
     useEffect(() => {
         const fetchManagerInfo = async () => {
@@ -12,7 +14,7 @@ const ComplainManagePage = () => {
                 const response = await fetch("http://localhost:3000/managers");
                 const managers = await response.json();
 
-                const loggedInManager = managers.find((manager) => manager.isLoggedIn);
+                const loggedInManager = managers.find((manager) => manager.username===managerUsername);
 
                 if (loggedInManager) {
                     setManagerParkingStation(loggedInManager.parkingStationName);

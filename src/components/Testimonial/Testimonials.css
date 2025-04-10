@@ -55,8 +55,8 @@
     background-color: rgb(249, 241, 226);
     padding: 20px;
     width: 30%;
-    min-height: 78vh;
     display: flex;
+    height: auto;
     flex-direction: column;
     justify-content: space-around;
     align-items: center;

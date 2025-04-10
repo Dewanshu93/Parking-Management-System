@@ -4,16 +4,17 @@ import ManagerNavbar from "../ManagerNavbar/ManagerNavbar";
 
 const ManagerDashboard = () => {
     const [requests, setRequests] = useState([]);
-    const [managerParkingStation, setManagerParkingStation] = useState(""); // Declare the state
+    const [managerParkingStation, setManagerParkingStation] = useState("");
+    const username = localStorage.getItem("managerUsername");
 
     useEffect(() => {
         const fetchManagerInfo = async () => {
             try {
                 const response = await fetch("http://localhost:3000/managers");
                 const managers = await response.json();
-    
-                const loggedInManager = managers.find((manager) => manager.isLoggedIn);
-    
+
+                const loggedInManager = managers.find((manager) => manager.username === username);
+
                 if (loggedInManager) {
                     setManagerParkingStation(loggedInManager.parkingStationName);
                     console.log("Manager's Parking Station:", loggedInManager.parkingStationName);
@@ -22,31 +23,31 @@ const ManagerDashboard = () => {
                 console.error("Error fetching manager information:", error);
             }
         };
-    
+
         fetchManagerInfo();
     }, []);
-    
+
     useEffect(() => {
         const fetchRequests = async () => {
             try {
                 const response = await fetch("http://localhost:3000/bookingHistory");
                 const data = await response.json();
-    
+
                 const filteredRequests = data.filter(
                     (request) => request.parkingStation === managerParkingStation
                 );
-    
+
                 setRequests(filteredRequests);
                 console.log("Filtered Requests:", filteredRequests);
             } catch (error) {
                 console.error("Error fetching requests:", error);
             }
         };
-    
+
         if (managerParkingStation) {
             fetchRequests();
         }
-    }, [managerParkingStation]); // Dependency on managerParkingStation state
+    }, [managerParkingStation]);
 
     const viewProfile = async (username) => {
         try {
@@ -54,16 +55,14 @@ const ManagerDashboard = () => {
             const users = await response.json();
             const userBookingsResponse = await fetch("http://localhost:3000/bookingHistory");
             const userBookings = await userBookingsResponse.json();
-    
-            // Filter user bookings
+
             const ticketsByUser = userBookings.filter(booking => booking.BookedBy === username);
             const totalTicketBooked = ticketsByUser.length;
             const user = users.find(user => user.username === username);
-    
+
             if (user) {
                 const userProfileWindow = window.open("", "_blank");
-    
-                // Create ticket details table
+
                 let ticketDetailsHTML = `
                     <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
                         <thead>
@@ -79,7 +78,7 @@ const ManagerDashboard = () => {
                         </thead>
                         <tbody>
                 `;
-    
+
                 ticketsByUser.forEach(ticket => {
                     ticketDetailsHTML += `
                         <tr>
@@ -89,14 +88,13 @@ const ManagerDashboard = () => {
                             <td style="padding: 8px;">${ticket.checkOutDate} ${ticket.checkOutTime}</td>
                             <td style="padding: 8px;">₹${ticket.totalPrice}</td>
                             <td style="padding: 8px;">${ticket.status}</td>
-                            <td style="padding: 8px;">${ticket.paymentStatus}</td>
+                            <td style="padding: 8px;">${ticket.payment}</td>
                         </tr>
                     `;
                 });
-    
+
                 ticketDetailsHTML += `</tbody></table>`;
-    
-                // Write user profile details + ticket table
+
                 userProfileWindow.document.write(`
                     <html>
                     <head>
@@ -146,34 +144,24 @@ const ManagerDashboard = () => {
             alert("Error fetching user details. Please try again.");
         }
     };
-    
-    
 
     const handleApprove = async (id) => {
         const requestToUpdate = requests.find((request) => request.id === id);
-
         if (!requestToUpdate) return;
 
         const updatedRequest = {
             ...requestToUpdate,
             status: "approved",
-            CheckedIn:true // Update status
         };
 
         try {
             await fetch(`http://localhost:3000/bookingHistory/${id}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updatedRequest),
             });
 
-            setRequests(
-                requests.map((request) =>
-                    request.id === id ? updatedRequest : request
-                )
-            );
+            setRequests(requests.map((req) => (req.id === id ? updatedRequest : req)));
         } catch (error) {
             alert("Failed to update request. Please try again.");
         }
@@ -181,52 +169,65 @@ const ManagerDashboard = () => {
 
     const handlePayment = async (id) => {
         const requestToUpdate = requests.find((request) => request.id === id);
-
         if (!requestToUpdate) return;
 
-        requestToUpdate.payment="Success";
+        const updatedRequest = {
+            ...requestToUpdate,
+            payment: "Success",
+        };
 
         try {
             await fetch(`http://localhost:3000/bookingHistory/${id}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(requestToUpdate),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedRequest),
             });
 
-            setRequests(
-                requests.map((request) =>
-                    request.id === id ? requestToUpdate : request
-                )
-            );
+            setRequests(requests.map((req) => (req.id === id ? updatedRequest : req)));
         } catch (error) {
             alert("Failed to update payment status. Please try again.");
         }
     };
 
-    const handleCheckout = async (id) => {
-        const requestToCheckout = requests.find((request) => request.id === id);
-        requestToCheckout.CheckedOut=true;
-        if (!requestToCheckout) return;
+    const handleCheckIn = async (id) => {
+        const requestToUpdate = requests.find((request) => request.id === id);
+        if (!requestToUpdate) return;
+
+        const updatedRequest = {
+            ...requestToUpdate,
+            CheckedIn: true,
+        };
 
         try {
-            // Add booking to bookingHistory
-            await fetch("http://localhost:3000/bookingHistory", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(requestToCheckout),
+            await fetch(`http://localhost:3000/bookingHistory/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedRequest),
             });
 
-            // Remove booking from bookingDetails
-            await fetch(`http://localhost:3000/bookingDetails/${id}`, {
-                method: "DELETE",
+            setRequests(requests.map((req) => (req.id === id ? updatedRequest : req)));
+        } catch (error) {
+            alert("Failed to update check-in status. Please try again.");
+        }
+    };
+
+    const handleCheckout = async (id) => {
+        const requestToUpdate = requests.find((request) => request.id === id);
+        if (!requestToUpdate) return;
+
+        const updatedRequest = {
+            ...requestToUpdate,
+            CheckedOut: true,
+        };
+
+        try {
+            await fetch(`http://localhost:3000/bookingHistory/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedRequest),
             });
 
-            // Update local state
-            setRequests(requests.filter((request) => request.id !== id));
+            setRequests(requests.map((req) => (req.id === id ? updatedRequest : req)));
         } catch (error) {
             alert("Failed to complete checkout. Please try again.");
         }
@@ -241,43 +242,29 @@ const ManagerDashboard = () => {
                     {requests.length > 0 ? (
                         requests.map((request) => (
                             <div key={request.id} className="card69">
-                                <p className="para699"><strong className="para699">Username:</strong> {request.BookedBy}</p>
-                                <p className="para699"><strong className="para699">City:</strong> {request.city}</p>
-                                <p className="para699"><strong className="para699">Parking Station:</strong> {request.parkingStation}</p>
-                                <p className="para699"><strong className="para699">Slot:</strong> {request.slot}</p>
-                                <p className="para699"><strong className="para699">Check-In:</strong> {request.checkInDate} {request.checkInTime}</p>
-                                <p className="para699"><strong className="para699">Check-Out:</strong> {request.checkOutDate} {request.checkOutTime}</p>
-                                <p className="para699"><strong className="para699">Total Price:</strong> ₹{request.totalPrice}</p>
-                                <p className="para699"><strong className="para699">Status:</strong> {request.status}</p>
-                                <p className="para699"><strong className="para699">Payment Status:</strong> {request.payment}</p>
-                                <p className="para699"><strong className="para699">Checked In:</strong> {request.CheckedIn?("YES"):("No")}</p>
-                                <p className="para699"><strong className="para699">Checked Out:</strong> {request.CheckedOut?("YES"):("No")}</p>
+                                <p className="para699"><strong>Username:</strong> {request.BookedBy}</p>
+                                <p className="para699"><strong>City:</strong> {request.city}</p>
+                                <p className="para699"><strong>Parking Station:</strong> {request.parkingStation}</p>
+                                <p className="para699"><strong>Slot:</strong> {request.slot}</p>
+                                <p className="para699"><strong>Check-In:</strong> {request.checkInDate} {request.checkInTime}</p>
+                                <p className="para699"><strong>Check-Out:</strong> {request.checkOutDate} {request.checkOutTime}</p>
+                                <p className="para699"><strong>Total Price:</strong> ₹{request.totalPrice}</p>
+                                <p className="para699"><strong>Status:</strong> {request.status}</p>
+                                <p className="para699"><strong>Payment Status:</strong> {request.payment}</p>
+                                <p className="para699"><strong>Checked In:</strong> {request.CheckedIn ? "YES" : "No"}</p>
+                                <p className="para699"><strong>Checked Out:</strong> {request.CheckedOut ? "YES" : "No"}</p>
                                 <div className="managerDashboardButtonConatiner">
-                                    {request.status  !== "approved" && request.CheckedIn !== true && (
-                                        <button
-                                            className="button69Manager"
-                                            onClick={() => handleApprove(request.id)}
-                                        >
-                                            Approve Request
-                                        </button>
+                                    {request.status !== "approved" && request.CheckedIn !== true && (
+                                        <button className="button69Manager" onClick={() => handleApprove(request.id)}>Approve Request</button>
+                                    )}
+                                    {request.CheckedIn !== true && (
+                                        <button className="button69Manager" onClick={() => handleCheckIn(request.id)}>Check-In</button>
                                     )}
                                     {request.payment !== "Success" && (
-                                        <button
-                                            className="button69Manager"
-                                            onClick={() => handlePayment(request.id)}
-                                        >
-                                            Mark as Paid
-                                        </button>
+                                        <button className="button69Manager" onClick={() => handlePayment(request.id)}>Mark as Paid</button>
                                     )}
-                                    <button
-                                        className="button69Manager"
-                                        onClick={() => handleCheckout(request.id)}
-                                    >
-                                        Checkout
-                                    </button>
-                                    <button className="button69Manager" onClick={()=> viewProfile(request.BookedBy)}>
-                                        View Profile 
-                                    </button>
+                                    <button className="button69Manager" onClick={() => handleCheckout(request.id)}>Checkout</button>
+                                    <button className="button69Manager" onClick={() => viewProfile(request.BookedBy)}>View Profile</button>
                                 </div>
                             </div>
                         ))

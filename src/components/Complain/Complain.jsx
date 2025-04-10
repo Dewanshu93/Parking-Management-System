@@ -14,6 +14,8 @@ const Complain = () => {
     const [selectedEntity, setSelectedEntity] = useState(""); // Either "employee" or "slot"
     const [complainAgainst, setComplainAgainst] = useState(""); // Selected employee or slot
     const [description, setDescription] = useState("");
+    const username=localStorage.getItem("username");
+    const userDetails=JSON.parse(localStorage.getItem("userDetails"));
 
     useEffect(() => {
         const fetchCities = async () => {
@@ -57,11 +59,14 @@ const Complain = () => {
 
         const newComplain = {
             city: selectedCity,
+            username,
+            customerName:userDetails.name,
             parkingStation: selectedParkingStation,
             type: selectedEntity, // "employee" or "slot"
             complainAgainst,
             description,
             status: "Not Resolved",
+            managerResponse:"No Action"
         };
 
         try {
@@ -107,9 +112,9 @@ const Complain = () => {
                             onChange={(e) => handleCityChange(e.target.value)}
                             className="dropdown"
                         >
-                            <option value="">-- Select City --</option>
+                            <option value="" className="dropdown">-- Select City --</option>
                             {cities.map((city) => (
-                                <option key={city.id} value={city.city}>
+                                <option key={city.id} value={city.city} className="dropdown">
                                     {city.city}
                                 </option>
                             ))}
@@ -125,9 +130,9 @@ const Complain = () => {
                                 onChange={(e) => handleParkingStationChange(e.target.value)}
                                 className="dropdown"
                             >
-                                <option value="">-- Select Parking Station --</option>
+                                <option value="" className="dropdown">-- Select Parking Station --</option>
                                 {parkingStations.map((station, index) => (
-                                    <option key={index} value={station.name}>
+                                    <option key={index} value={station.name} className="dropdown">
                                         {station.name}
                                     </option>
                                 ))}
@@ -144,9 +149,9 @@ const Complain = () => {
                                 onChange={(e) => setSelectedEntity(e.target.value)}
                                 className="dropdown"
                             >
-                                <option value="">-- Select Entity --</option>
-                                <option value="employee">Employee</option>
-                                <option value="slot">Parking Slot</option>
+                                <option value="" className="dropdown">-- Select Entity --</option>
+                                <option value="employee" className="dropdown">Employee</option>
+                                <option value="slot" className="dropdown">Parking Slot</option>
                             </select>
                         </div>
                     )}
@@ -160,9 +165,9 @@ const Complain = () => {
                                 onChange={(e) => setComplainAgainst(e.target.value)}
                                 className="dropdown"
                             >
-                                <option value="">-- Select Employee --</option>
+                                <option value="" className="dropdown">-- Select Employee --</option>
                                 {employees.map((employee, index) => (
-                                    <option key={index} value={employee.name}>
+                                    <option key={index} value={employee.name} className="dropdown">
                                         {employee.name} - {employee.role}
                                     </option>
                                 ))}
@@ -178,9 +183,9 @@ const Complain = () => {
                                 onChange={(e) => setComplainAgainst(e.target.value)}
                                 className="dropdown"
                             >
-                                <option value="">-- Select Slot --</option>
+                                <option value="" className="dropdown">-- Select Slot --</option>
                                 {slots.map((slot, index) => (
-                                    <option key={index} value={`Slot ${slot.slotNumber}`}>
+                                    <option key={index} value={`Slot ${slot.slotNumber}`} className="dropdown">
                                         Slot {slot.slotNumber} - ₹{slot.price}
                                     </option>
                                 ))}

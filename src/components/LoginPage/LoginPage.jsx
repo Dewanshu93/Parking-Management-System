@@ -19,6 +19,7 @@ const LoginPage = () => {
             if (user) {
                 toast.success(`${data.username} logged in successfully!`);
                 localStorage.setItem("isLoggedIn", "true");
+                localStorage.setItem("userDetails",JSON.stringify(user));
                 localStorage.setItem("username", data.username); // Store username
 
                 setTimeout(() => {

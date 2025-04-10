@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 
 const ProtectedRouteManager = ({ children }) => {
 
-  const isManager=localStorage.getItem("isManager")==="true";
+  const isManager=localStorage.getItem("isManagerLoggedIn")==="true";
   
   
   if(!isManager){

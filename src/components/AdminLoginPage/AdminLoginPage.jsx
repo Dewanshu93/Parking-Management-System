@@ -21,8 +21,9 @@ const AdminLoginPage = () => {
 
             if (admin) {
                 toast.success("Admin login successful!");
-                localStorage.setItem("isAdmin", "true");
+                localStorage.setItem("isAdminLoggedIn", "true");
                 localStorage.setItem("AdminUsername", admin.username);
+                localStorage.setItem("adminDetails",JSON.stringify(admin));
 
                 setTimeout(() => {
                     navigate("/AdminDashboard");

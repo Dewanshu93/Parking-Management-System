@@ -18,7 +18,8 @@
     padding-left: 10px;
 }
 .bookDetails{
-    color: white;
+    color: black;
+    text-align: start;
 }
 .bookDetails{
     font-family: sans-serif;

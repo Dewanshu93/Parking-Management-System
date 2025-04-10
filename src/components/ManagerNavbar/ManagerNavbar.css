@@ -10,6 +10,36 @@
     width: 100%;
     z-index: 10;
 }
+.hover-box {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.tooltip {
+    visibility: hidden;
+    width: 220px;
+    background-color: white;
+    color: black;
+    text-align: left;
+    border-radius: 8px;
+    padding: 10px;
+    position: absolute;
+    z-index: 100;
+    top: 100%;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 14px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+.managerInfoTooltip{
+    color: black;
+}
+.hover-box:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
 
 /* Navbar title */
 .head3 {

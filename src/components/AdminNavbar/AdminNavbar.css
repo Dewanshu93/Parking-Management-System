@@ -10,6 +10,33 @@
     width: 100%;
     z-index: 10;
 }
+..logoWithTooltip {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .logoWithTooltip .tooltipBox {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    padding: 10px;
+    border-radius: 8px;
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 0;
+    margin-top: 5px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .logoWithTooltip:hover .tooltipBox {
+    visibility: visible;
+    opacity: 1;
+  }
+  
 
 /* Navbar title */
 .head3 {

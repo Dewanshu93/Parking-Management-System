@@ -1,51 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import "./ManagerManagement.css";
 import AdminNavbar from '../AdminNavbar/AdminNavbar';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function ManagerManagement() {
   const [managers, setManagers] = useState([]);
+  const [cityLocations, setCityLocations] = useState([]);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
     city: '',
     parkingStationName: '',
   });
-  const [editingId, setEditingId] = useState(null); // Track which manager is being edited
+  const [editingId, setEditingId] = useState(null);
+  const [availableStations, setAvailableStations] = useState([]);
 
-  // Fetch data from db.JSON
+  // Fetch data from db.json
   useEffect(() => {
     fetch('http://localhost:3000/managers')
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Fetched Data:', data);
-        if (Array.isArray(data)) {
-          setManagers(data);
-        } else {
-          console.error('Invalid API response:', data);
-        }
-      })
-      .catch((err) => console.error('Error fetching managers:', err));
+      .then((res) => res.json())
+      .then((data) => setManagers(Array.isArray(data) ? data : []))
+      .catch(() => toast.error("Error loading managers"));
+
+    fetch('http://localhost:3000/cityLocations')
+      .then((res) => res.json())
+      .then((data) => setCityLocations(Array.isArray(data) ? data : []))
+      .catch(() => toast.error("Error loading city locations"));
   }, []);
 
-  // Handle form input changes
+  useEffect(() => {
+    if (formData.city) {
+      const cityObj = cityLocations.find(loc => loc.city === formData.city);
+      if (cityObj) {
+        setAvailableStations(cityObj.parkingStations.map(ps => ps.name));
+      } else {
+        setAvailableStations([]);
+      }
+    } else {
+      setAvailableStations([]);
+    }
+  }, [formData.city, cityLocations]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+      ...(name === "city" ? { parkingStationName: "" } : {})
+    }));
   };
 
-  // Add a new manager
+  const isUsernameUnique = (username) => {
+    return !managers.some((mgr) => mgr.username === username && mgr.id !== editingId);
+  };
+
   const addManager = () => {
-    if (!formData.username || !formData.city || !formData.parkingStationName) {
-      alert("Please fill in all fields!");
+    const { username, password, city, parkingStationName } = formData;
+
+    if (!username || !password || !city || !parkingStationName) {
+      toast.error("All fields are required");
       return;
     }
+
+    if (!isUsernameUnique(username)) {
+      toast.error("Username already exists!");
+      return;
+    }
+
     const newManager = {
       id: Date.now().toString(),
       ...formData,
       isLoggedIn: false,
     };
 
-    // Send POST request to add new manager
     fetch('http://localhost:3000/managers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,31 +82,43 @@ function ManagerManagement() {
       .then(() => {
         setManagers([...managers, newManager]);
         setFormData({ username: '', password: '', city: '', parkingStationName: '' });
+        toast.success("Manager added successfully!");
       })
-      .catch((err) => console.error('Error adding manager:', err));
+      .catch(() => toast.error("Error adding manager"));
   };
 
-  // Set formData with existing manager details when clicking "Edit"
   const editManager = (id) => {
     const managerToEdit = managers.find(manager => manager.id === id);
     if (managerToEdit) {
       setFormData({
         username: managerToEdit.username,
-        password: '', // Keep password empty for security
+        password: '',
         city: managerToEdit.city,
         parkingStationName: managerToEdit.parkingStationName,
       });
-      setEditingId(id); // Track manager being edited
+      setEditingId(id);
     }
   };
 
-  // Save edited manager (PUT request)
   const saveEditedManager = () => {
-    if (!editingId) return;
-    
+    const { username, password, city, parkingStationName } = formData;
+
+    if (!username || !city || !parkingStationName) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    if (!isUsernameUnique(username)) {
+      toast.error("Username already exists!");
+      return;
+    }
+
     const updatedManager = {
-      ...formData,
       id: editingId,
+      username,
+      password,
+      city,
+      parkingStationName,
     };
 
     fetch(`http://localhost:3000/managers/${editingId}`, {
@@ -87,29 +127,32 @@ function ManagerManagement() {
       body: JSON.stringify(updatedManager),
     })
       .then(() => {
-        setManagers(managers.map(mgr => (mgr.id === editingId ? updatedManager : mgr)));
+        setManagers(managers.map((mgr) => mgr.id === editingId ? updatedManager : mgr));
         setEditingId(null);
         setFormData({ username: '', password: '', city: '', parkingStationName: '' });
+        toast.success("Manager updated!");
       })
-      .catch((err) => console.error('Error updating manager:', err));
+      .catch(() => toast.error("Error updating manager"));
   };
 
-  // Remove a manager (DELETE request)
   const removeManager = (id) => {
     fetch(`http://localhost:3000/managers/${id}`, { method: 'DELETE' })
       .then(() => {
         setManagers(managers.filter(manager => manager.id !== id));
+        toast.success("Manager removed");
       })
-      .catch((err) => console.error('Error removing manager:', err));
+      .catch(() => toast.error("Error removing manager"));
   };
+
+  const cities = cityLocations.map(loc => loc.city);
 
   return (
     <div className='managerManagement'>
       <AdminNavbar />
+      <ToastContainer />
       <div className='managerManagementContainer'>
         <h1 className='managerManagementHead'>Manager Management</h1>
-        
-        {/* Form for Adding/Editing Managers */}
+
         <div className='managerManagementInputContainer'>
           <input
             type="text"
@@ -127,22 +170,30 @@ function ManagerManagement() {
             onChange={handleInputChange}
             className='managerManagementInput'
           />
-          <input
-            type="text"
+          <select
             name="city"
-            placeholder="City"
             value={formData.city}
             onChange={handleInputChange}
             className='managerManagementInput'
-          />
-          <input
-            type="text"
+          >
+            <option value="">Select City</option>
+            {cities.map((city, index) => (
+              <option key={index} value={city}>{city}</option>
+            ))}
+          </select>
+          <select
             name="parkingStationName"
-            placeholder="Parking Station Name"
             value={formData.parkingStationName}
             onChange={handleInputChange}
             className='managerManagementInput'
-          />
+            disabled={!formData.city}
+          >
+            <option value="">Select Parking Station</option>
+            {availableStations.map((station, index) => (
+              <option key={index} value={station}>{station}</option>
+            ))}
+          </select>
+
           {editingId ? (
             <button onClick={saveEditedManager}>Save Changes</button>
           ) : (
@@ -150,7 +201,6 @@ function ManagerManagement() {
           )}
         </div>
 
-        {/* Manager List Table */}
         <table border="1" className='managerManagementTable'>
           <thead>
             <tr>
@@ -161,7 +211,7 @@ function ManagerManagement() {
             </tr>
           </thead>
           <tbody>
-            {managers && managers.map((manager) => (
+            {managers.map((manager) => (
               <tr key={manager.id}>
                 <td className='managerManagementRow'>{manager.username}</td>
                 <td className='managerManagementRow'>{manager.city}</td>
