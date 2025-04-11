@@ -5,7 +5,7 @@ import "./AdminNavbar.css"; // Assuming you're using an external CSS
 const AdminNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
-  const username = localStorage.getItem("username");
+  const username = localStorage.getItem("AdminUsername");
 
   const navigate = useNavigate();
 

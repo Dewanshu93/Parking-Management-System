@@ -3,10 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { isAsyncThunkAction } from "@reduxjs/toolkit";
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [userDetails, setUserDetails] = useState(null);
+    const isLoggedIn=localStorage.getItem("isLoggedIn");
+    console.log(isLoggedIn)
 
     const navigate = useNavigate();
     const username=localStorage.getItem("username");
@@ -62,7 +65,12 @@ const Navbar = () => {
                         </p>
                     </div>
                 ) : (
-                    <p>Loading user details...</p>
+                    <>
+                        <p><strong style={{color:"black",textAlign:"start"}}>Welcome to Park-King. Park Like King</strong></p>
+                        <Link to="/SignUp">
+                        <button className="btn2">Signup</button>
+                        </Link>
+                    </>
                 )}
             </div>
             {/* Hamburger icon */}
@@ -71,7 +79,9 @@ const Navbar = () => {
             </button>
             {/* Menu Items */}
             <ul className={`secondNav ${isMenuOpen ? "openMenu" : "closeMenu"}`}>
-                <Link to="/dashboard">
+                {isLoggedIn && (
+                    <>
+                        <Link to="/dashboard">
                     <li className="listItem1">Home</li>
                 </Link>
                 <Link to="/AboutUs">
@@ -101,6 +111,32 @@ const Navbar = () => {
                     </li>
                 </Link>
                 <button onClick={onLogout} className="btn2">Logout</button>
+                    </>
+                )}
+                {isLoggedIn===null &&(
+                    <>
+                        <Link to="/AboutUs">
+                    <li className="listItem1">About us</li>
+                </Link>
+                <Link to="/Plan">
+                    <li className="listItem1">Plan</li>
+                </Link>
+                <Link to="/Testimonials">
+                    <li className="listItem1">Testimonials</li>
+                </Link>
+                <Link to="/RateUs">
+                    <li className="listItem1">Rate Us</li>
+                </Link>
+                <div>
+                <Link to="/SignUp">
+                        <button className="btn2">Signup</button>
+                        </Link>
+                <Link className="listItem1" to="/login">
+                <button className="btn2">Login</button>
+                </Link>
+                </div>
+                    </>
+                )}
             </ul>
         </nav>
     );

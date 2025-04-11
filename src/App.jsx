@@ -43,11 +43,11 @@ function App() {
 
 
         <Route path="/dashboard" element={<ProtectedRoute> <DashboardPage /></ProtectedRoute>}/>
-        <Route path="/AboutUs" element={<ProtectedRoute><AboutUs /></ProtectedRoute>}/>
-        <Route path="/Plan" element={<ProtectedRoute><PlanPage /></ProtectedRoute>}/>
-        <Route path="/Testimonials" element={<ProtectedRoute><Testimonials /></ProtectedRoute>}/>
+        <Route path="/AboutUs" element={<AboutUs />}/>
+        <Route path="/Plan" element={<PlanPage />}/>
+        <Route path="/Testimonials" element={<Testimonials />}/>
         <Route path="/MyBookings" element={<ProtectedRoute><MyBookings/></ProtectedRoute>} />
-        <Route path="/RateUs" element={<ProtectedRoute><RateUs /></ProtectedRoute>} />
+        <Route path="/RateUs" element={<RateUs />} />
         <Route path="/BookingHistory" element={<ProtectedRoute><BookingHistory/></ProtectedRoute>}/>
         <Route path="/RaiseComplain" element={<ProtectedRoute><Complain/></ProtectedRoute>}/>
         <Route path="/ComplainHistory" element={<ProtectedRoute><ComplainHistory/></ProtectedRoute>}/>

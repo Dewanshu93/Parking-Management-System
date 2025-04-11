@@ -52,7 +52,7 @@ const FirstPage = () => {
                 {counter === 2 && (
                     <>
                         <button onClick={onClickPrev} className="btn0">Prev</button>
-                        <Link to="/login"><button className="btn0">Start</button></Link>
+                        <Link to="/AboutUs"><button className="btn0">Start</button></Link>
                     </>
                 )}
             </div>
